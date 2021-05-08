@@ -31,4 +31,4 @@ class LoginForm(FlaskForm):
         user = User.query.filter_by(username=self.username.data).first()
         if user and not bcrypt.check_password_hash(
                 user.password, password.data):
-            raise ValidationError('Password doesn\'t match. Please try again.')
+            raise ValidationError('Password does not match. Please try again.')

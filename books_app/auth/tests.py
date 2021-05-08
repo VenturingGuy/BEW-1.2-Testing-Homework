@@ -53,45 +53,62 @@ class AuthTests(TestCase):
         db.create_all()
 
     def test_signup(self):
-        # TODO: Write a test for the signup route. It should:
-        # - Make a POST request to /signup, sending a username & password
-        # - Check that the user now exists in the database
-        pass
+        """Tests for user signup."""
+
+        p_data = {'username': 'test_user', 'password': 'testpass'}
+        self.app.post('/signup', data=p_data)
+        signup_user = User.query.filter_by(username="test_user").one()
+        self.assertEqual(signup_user.username, "test_user")
 
     def test_signup_existing_user(self):
-        # TODO: Write a test for the signup route. It should:
-        # - Create a user
-        # - Make a POST request to /signup, sending the same username & password
-        # - Check that the form is displayed again with an error message
-        pass
+        """Tests for signup for an existing user, returning a message indicating the username already exists."""
+
+        create_user()
+        p_data = {'username': 'me1', 'password': 'testpass'}
+        response = self.app.post('/signup', data=p_data)
+        response_text = response.get_data(as_text=True)
+        self.assertIn('That username is taken. Please choose a different one.', response_text)
 
     def test_login_correct_password(self):
-        # TODO: Write a test for the login route. It should:
-        # - Create a user
-        # - Make a POST request to /login, sending the created username & password
-        # - Check that the "login" button is not displayed on the homepage
-        pass
+        """Tests for user login."""
+
+        create_user()
+        p_data = {'username': 'me1', 'password': 'password'}
+        response = self.app.post('/login', data=p_data)
+        response_text = response.get_data(as_text=True)
+        self.assertNotIn('Log In', response_text)
+        self.assertNotIn('Sign Up', response_text)
+        
 
     def test_login_nonexistent_user(self):
-        # TODO: Write a test for the login route. It should:
-        # - Make a POST request to /login, sending a username & password
-        # - Check that the login form is displayed again, with an appropriate
-        #   error message
-        pass
+        """Tests for user login, returning a message that indicates the user doesn't exist (hasn't signed up)."""
+
+        p_data = {'username': 'me1', 'password': 'password_hash'}
+        response = self.app.post('/login', data=p_data)
+        response_text = response.get_data(as_text=True)
+        self.assertIn('No user with that username. Please try again.', response_text)
 
     def test_login_incorrect_password(self):
-        # TODO: Write a test for the login route. It should:
-        # - Create a user
-        # - Make a POST request to /login, sending the created username &
-        #   an incorrect password
-        # - Check that the login form is displayed again, with an appropriate
-        #   error message
-        pass
+        """Tests for user login, returning a message indicating that the password is incorrect."""
+
+        create_user()
+        p_data = {'username': 'me1', 'password': 'testpass'}
+        response = self.app.post('/login', data=p_data)
+        response_text = response.get_data(as_text=True)
+
+        # Note: I changed the assert message to remove the contraction. This is also reflected in the forms.py file.
+        self.assertIn('Password does not match. Please try again.', response_text)
 
     def test_logout(self):
-        # TODO: Write a test for the logout route. It should:
-        # - Create a user
-        # - Log the user in (make a POST request to /login)
-        # - Make a GET request to /logout
-        # - Check that the "login" button appears on the homepage
-        pass
+        """Tests for user logging out."""
+
+        create_user()
+        p_data = {'username': 'test_user5', 'password': 'testpass5'}
+        self.app.post('/login', data=p_data)
+        response = self.app.post('/logout', follow_redirects=True)
+
+        response_text = response.get_data(as_text=True)
+        self.assertNotIn('Log In', response_text)
+        self.assertNotIn('Sign Up', response_text)
+
+
